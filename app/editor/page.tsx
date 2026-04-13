@@ -1,11 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export default function EditorPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const noteId = searchParams.get("id");
+  const [noteId, setNoteId] = useState<string | null>(null);
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -13,11 +12,15 @@ export default function EditorPage() {
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    if (!noteId) return;
+    const params = new URLSearchParams(window.location.search);
+    const idFromUrl = params.get("id");
+    setNoteId(idFromUrl);
+
+    if (!idFromUrl) return;
 
     const savedNotes = localStorage.getItem("notes");
     const notes = savedNotes ? JSON.parse(savedNotes) : [];
-    const existingNote = notes.find((note: any) => String(note.id) === noteId);
+    const existingNote = notes.find((note: any) => String(note.id) === idFromUrl);
 
     if (existingNote) {
       setTitle(existingNote.title || "");
@@ -25,7 +28,7 @@ export default function EditorPage() {
       setPinned(existingNote.pinned || false);
       setIsEditing(true);
     }
-  }, [noteId]);
+  }, []);
 
   const handleSave = () => {
     const savedNotes = localStorage.getItem("notes");
@@ -119,23 +122,20 @@ export default function EditorPage() {
         <div className="flex gap-3 pt-2">
           <button
             onClick={handleSave}
-            className="bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-2 hover:bg-zinc-700 transition-colors"
-          >
+            className="bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-2 hover:bg-zinc-700 transition-colors">
             Save
           </button>
 
           <button
             onClick={() => router.push("/notes")}
-            className="bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-2 hover:bg-zinc-700 transition-colors"
-          >
+            className="bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-2 hover:bg-zinc-700 transition-colors">
             Cancel
           </button>
 
           {isEditing && (
             <button
               onClick={handleDelete}
-              className="bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-2 hover:bg-zinc-700 transition-colors"
-            >
+              className="bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-2 hover:bg-zinc-700 transition-colors">
               Delete
             </button>
           )}
